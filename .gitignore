@@ -1,0 +1,27 @@
+# --- Dependencies ---
+node_modules/
+*/node_modules/
+
+# --- Environment Variables (Secrets) ---
+# VERY IMPORTANT: Never upload .env files
+.env
+backend/.env
+frontend/.env
+
+# --- Production Builds ---
+# You only upload source code, not the built app
+frontend/dist/
+frontend/build/
+
+# --- Uploaded Files ---
+# Ignore all files in uploads, but keep the folder itself
+backend/uploads/*
+!backend/uploads/.gitkeep
+
+# --- System Files ---
+.DS_Store
+Thumbs.db
+
+# --- Logs ---
+*.log
+npm-debug.log*
