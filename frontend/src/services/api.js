@@ -1,6 +1,4 @@
-// ============================================
-// FILE: frontend/src/services/api.js
-// ============================================
+
 import axios from 'axios';
 
 const API_URL = "https://employee-performance-dashboard-gocr.onrender.com/api";

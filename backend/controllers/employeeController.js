@@ -2,29 +2,23 @@ const asyncHandler = require('express-async-handler');
 const Employee = require('../models/Employee');
 const User = require('../models/User');
 
-
+// ==========================================
+// GET ALL EMPLOYEES
+// ==========================================
 const getEmployees = asyncHandler(async (req, res) => {
-  
-  
-  const users = await User.find({ 
-    role: { $in: ['employee', 'manager'] } 
-  }).select('-password');
+  const employees = await Employee.find({})
+    .populate('user', '-password') // Get user details
+    .populate('reportsTo', 'name email role'); // Get manager details
 
-  
-  
-  const formattedEmployees = users.map(user => ({
-    _id: user._id, 
-    user: user, 
-    department: user.department || 'General',
-    designation: user.designation || 'Staff',
-    reportsTo: null
-  }));
+  // Filter out any broken records where the user was deleted
+  const validEmployees = employees.filter(emp => emp.user !== null);
 
-  res.status(200).json(formattedEmployees);
+  res.status(200).json(validEmployees);
 });
 
-
-
+// ==========================================
+// GET SINGLE EMPLOYEE
+// ==========================================
 const getEmployeeById = asyncHandler(async (req, res) => {
   const employee = await Employee.findById(req.params.id)
     .populate('user', 'name email role avatar')
@@ -38,8 +32,9 @@ const getEmployeeById = asyncHandler(async (req, res) => {
   }
 });
 
-
-
+// ==========================================
+// CREATE EMPLOYEE
+// ==========================================
 const createEmployee = asyncHandler(async (req, res) => {
   const { name, email, password, role, department, designation, phone, location, reportsTo } = req.body;
 
@@ -49,6 +44,7 @@ const createEmployee = asyncHandler(async (req, res) => {
     throw new Error('User already exists');
   }
 
+  // 1. Create User
   const user = await User.create({
     name,
     email,
@@ -59,11 +55,12 @@ const createEmployee = asyncHandler(async (req, res) => {
   });
 
   if (user) {
-    
+    // 2. Create Employee Profile
+    const validManager = (reportsTo && reportsTo !== "") ? reportsTo : null;
 
     await Employee.create({
       user: user._id,
-      reportsTo: reportsTo || null,
+      reportsTo: validManager, 
       department: department || 'General',
       designation: designation || 'Employee',
       status: 'Active',
@@ -79,29 +76,64 @@ const createEmployee = asyncHandler(async (req, res) => {
   }
 });
 
-
-
+// ==========================================
+// UPDATE EMPLOYEE (Now Updates Name & Email too!)
+// ==========================================
 const updateEmployee = asyncHandler(async (req, res) => {
   const employee = await Employee.findById(req.params.id);
-  if (!employee) return res.status(404).throw(new Error('Not found'));
-  
-  const updated = await Employee.findByIdAndUpdate(req.params.id, req.body, { new: true });
-  res.status(200).json(updated);
-});
 
-
-
-const deleteEmployee = asyncHandler(async (req, res) => {
-  const employee = await Employee.findById(req.params.id);
   if (!employee) {
     res.status(404);
     throw new Error('Employee not found');
   }
-  if (employee.user) await User.findByIdAndDelete(employee.user);
+
+  // 1. Update the USER info (Name, Email, Role)
+  const { name, email, role } = req.body;
+  if (name || email || role) {
+    const userUpdate = {};
+    if (name) userUpdate.name = name;
+    if (email) userUpdate.email = email;
+    if (role) userUpdate.role = role;
+
+    // Update the linked User document
+    await User.findByIdAndUpdate(employee.user, userUpdate);
+  }
+  
+  // 2. Update the EMPLOYEE info (Department, Designation, Manager)
+  if (req.body.reportsTo === "") {
+    req.body.reportsTo = null;
+  }
+
+  const updated = await Employee.findByIdAndUpdate(req.params.id, req.body, { new: true })
+    .populate('user', '-password')
+    .populate('reportsTo', 'name email');
+
+  res.status(200).json(updated);
+});
+
+// ==========================================
+// DELETE EMPLOYEE
+// ==========================================
+const deleteEmployee = asyncHandler(async (req, res) => {
+  const employee = await Employee.findById(req.params.id);
+  
+  if (!employee) {
+    res.status(404);
+    throw new Error('Employee not found');
+  }
+
+  // Delete the associated User account too
+  if (employee.user) {
+    await User.findByIdAndDelete(employee.user);
+  }
+
   await employee.deleteOne();
   res.status(200).json({ id: req.params.id, message: 'Removed' });
 });
 
+// ==========================================
+// GET STATS
+// ==========================================
 const getEmployeeStats = asyncHandler(async (req, res) => {
   const total = await User.countDocuments({ role: { $in: ['employee', 'manager'] } });
   res.status(200).json({ total, active: total, departments: [] });

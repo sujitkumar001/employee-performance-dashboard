@@ -5,7 +5,7 @@ import { useDispatch, useSelector } from 'react-redux';
 import { logout } from '../redux/slices/authSlice';
 
 const Sidebar = () => {
-  const [isMobileOpen, setIsMobileOpen] = useState(false); // State for mobile toggle
+  const [isMobileOpen, setIsMobileOpen] = useState(false); 
   const location = useLocation();
   const navigate = useNavigate();
   const dispatch = useDispatch();
@@ -25,7 +25,7 @@ const Sidebar = () => {
     navigate('/login');
   };
 
-  // Helper to close menu when a link is clicked on mobile
+  
   const closeMobileMenu = () => setIsMobileOpen(false);
 
   // Fallback for user name logic
