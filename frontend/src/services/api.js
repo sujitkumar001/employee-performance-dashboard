@@ -3,7 +3,7 @@
 // ============================================
 import axios from 'axios';
 
-const API_URL = "https://employee-performance-dashboard-gocr.onrender.com";
+const API_URL = "https://employee-performance-dashboard-gocr.onrender.com/api";
 
 // Create axios instance
 const api = axios.create({
