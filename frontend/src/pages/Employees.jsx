@@ -352,7 +352,7 @@ const EmployeesPage = () => {
                     <select disabled={isEditing} className={`w-full px-3 py-2 border rounded-lg ${isEditing ? 'bg-gray-100' : ''}`} value={formData.role} onChange={(e) => setFormData({...formData, role: e.target.value})}>
                       <option value="employee">Employee</option>
                       <option value="manager">Manager</option>
-                      <option value="admin">Admin</option>
+                      
                     </select>
                   </div>
                 </div>
@@ -375,7 +375,7 @@ const EmployeesPage = () => {
                     <input type="text" placeholder="e.g. Senior Developer" className="w-full px-3 py-2 border rounded-lg" value={formData.designation} onChange={(e) => setFormData({...formData, designation: e.target.value})} />
                   </div>
                   
-                  {/* REPORTS TO (LINKING FEATURE) */}
+                  {/* REPORTS TO (LINKING FEATURE)
                   <div className="col-span-2">
                     <label className="block text-sm font-medium text-gray-700 mb-1">Link to Manager (Reports To)</label>
                     <select 
@@ -395,7 +395,7 @@ const EmployeesPage = () => {
                     <p className="text-xs text-gray-500 mt-1">
                         Select which manager this employee reports to. This creates the team link.
                     </p>
-                  </div>
+                  </div> */}
                 </div>
               </div>
 

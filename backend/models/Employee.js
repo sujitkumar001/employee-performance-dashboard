@@ -6,6 +6,11 @@ const employeeSchema = new mongoose.Schema({
     ref: 'User',
     required: true
   },
+  reportsTo: {
+    type: mongoose.Schema.Types.ObjectId,
+    ref: 'User',
+    default: null
+  },
   department: {
     type: String,
     required: [true, 'Please add a department'],
@@ -26,13 +31,6 @@ const employeeSchema = new mongoose.Schema({
     type: Date,
     default: Date.now
   },
-  salary: {
-    type: Number,
-    required: false
-  },
-  skills: [{
-    type: String
-  }],
   performanceRating: {
     type: Number,
     default: 0

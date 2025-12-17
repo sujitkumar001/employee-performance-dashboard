@@ -1,23 +1,28 @@
 const asyncHandler = require('express-async-handler');
 const User = require('../models/User');
 
-
-
+// ==========================================
+// 1. REGISTER (RESTRICTED: Only 1 Admin allowed)
+// ==========================================
 const register = asyncHandler(async (req, res) => {
-  const { name, email, password, role } = req.body;
+  const { name, email, password, department, designation } = req.body;
 
-  const userExists = await User.findOne({ email });
+  // Logic: Check if an Admin already exists in the database
+  const adminExists = await User.findOne({ role: 'admin' });
 
-  if (userExists) {
-    res.status(400);
-    throw new Error('User already exists');
+  if (adminExists) {
+    res.status(403);
+    throw new Error('An administrator already exists. Public registration is closed. Please contact the Admin to create an account.');
   }
 
+  // Create the first user and force the role to 'admin'
   const user = await User.create({
     name,
     email,
     password,
-    role
+    role: 'admin', 
+    department: department || 'Administration',
+    designation: designation || 'System Administrator'
   });
 
   if (user) {
@@ -37,8 +42,9 @@ const register = asyncHandler(async (req, res) => {
   }
 });
 
-
-
+// ==========================================
+// 2. LOGIN
+// ==========================================
 const login = asyncHandler(async (req, res) => {
   const { email, password } = req.body;
 
@@ -49,14 +55,7 @@ const login = asyncHandler(async (req, res) => {
 
   const user = await User.findOne({ email }).select('+password');
 
-  if (!user) {
-    res.status(401);
-    throw new Error('Invalid credentials');
-  }
-
-  const isMatch = await user.matchPassword(password);
-
-  if (!isMatch) {
+  if (!user || !(await user.matchPassword(password))) {
     res.status(401);
     throw new Error('Invalid credentials');
   }
@@ -73,45 +72,30 @@ const login = asyncHandler(async (req, res) => {
   });
 });
 
-
-
-
+// ==========================================
+// 3. GET CURRENT USER
+// ==========================================
 const getMe = asyncHandler(async (req, res) => {
   const user = await User.findById(req.user.id);
   res.status(200).json({ success: true, user });
-});
-
-
-
-const updateDetails = asyncHandler(async (req, res) => {
-  const fieldsToUpdate = {
-    name: req.body.name,
-    email: req.body.email
-  };
-  const user = await User.findByIdAndUpdate(req.user.id, fieldsToUpdate, {
-    new: true,
-    runValidators: true
-  });
-  res.status(200).json({ success: true, user });
-});
-
-
-
-const updatePassword = asyncHandler(async (req, res) => {
-  const user = await User.findById(req.user.id).select('+password');
-  if (!(await user.matchPassword(req.body.currentPassword))) {
-    res.status(401);
-    throw new Error('Password is incorrect');
-  }
-  user.password = req.body.newPassword;
-  await user.save();
-  res.status(200).json({ success: true, token: user.getSignedJwtToken() });
 });
 
 module.exports = {
   register,
   login,
   getMe,
-  updateDetails,
-  updatePassword
+  updateDetails: asyncHandler(async (req, res) => {
+    const user = await User.findByIdAndUpdate(req.user.id, req.body, { new: true, runValidators: true });
+    res.status(200).json({ success: true, user });
+  }),
+  updatePassword: asyncHandler(async (req, res) => {
+    const user = await User.findById(req.user.id).select('+password');
+    if (!(await user.matchPassword(req.body.currentPassword))) {
+      res.status(401);
+      throw new Error('Password is incorrect');
+    }
+    user.password = req.body.newPassword;
+    await user.save();
+    res.status(200).json({ success: true, token: user.getSignedJwtToken() });
+  })
 };

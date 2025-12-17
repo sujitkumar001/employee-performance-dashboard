@@ -1,8 +1,8 @@
 import React, { useState } from 'react';
-import { useNavigate, Link } from 'react-router-dom';
+import { useNavigate } from 'react-router-dom';
 import { useDispatch } from 'react-redux';
 import { loginSuccess } from '../redux/slices/authSlice';
-import { authAPI } from '../services/api'; // Import real API
+import { authAPI } from '../services/api'; 
 import { BarChart3, Mail, Lock, Eye, EyeOff } from 'lucide-react';
 
 const Login = () => {
@@ -22,10 +22,8 @@ const Login = () => {
     setLoading(true);
 
     try {
-      // Call REAL Backend
       const response = await authAPI.login(formData);
 
-      // Dispatch to Redux
       dispatch(loginSuccess({
         user: response.data.user,
         token: response.data.token
@@ -108,13 +106,9 @@ const Login = () => {
             </button>
           </form>
         </div>
-
-        <p className="text-center text-white text-sm mt-6">
-          Don't have an account?{' '}
-          <Link to="/register" className="font-semibold underline hover:text-indigo-200">
-            Create Account
-          </Link>
-        </p>
+        
+        {/* REMOVED THE REGISTER LINK HERE */}
+        
       </div>
     </div>
   );
