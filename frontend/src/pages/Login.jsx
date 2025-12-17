@@ -1,37 +1,44 @@
-import React, { useState } from 'react';
-import { useNavigate } from 'react-router-dom';
+import React, { useState, useEffect } from 'react';
+import { useNavigate, Link } from 'react-router-dom';
 import { useDispatch } from 'react-redux';
 import { loginSuccess } from '../redux/slices/authSlice';
 import { authAPI } from '../services/api'; 
-import { BarChart3, Mail, Lock, Eye, EyeOff } from 'lucide-react';
+import { BarChart3, Mail, Lock, Eye, EyeOff, UserPlus } from 'lucide-react';
 
 const Login = () => {
   const navigate = useNavigate();
   const dispatch = useDispatch();
   const [showPassword, setShowPassword] = useState(false);
-  const [formData, setFormData] = useState({
-    email: '',
-    password: ''
-  });
+  const [adminExists, setAdminExists] = useState(true); // Default to true to be safe
+  const [formData, setFormData] = useState({ email: '', password: '' });
   const [error, setError] = useState('');
   const [loading, setLoading] = useState(false);
+
+  // Check if Admin exists on mount
+  useEffect(() => {
+    const fetchAdminStatus = async () => {
+      try {
+        const response = await authAPI.checkAdmin();
+        setAdminExists(response.data.adminExists);
+      } catch (err) {
+        console.error("Error checking admin status", err);
+      }
+    };
+    fetchAdminStatus();
+  }, []);
 
   const handleSubmit = async (e) => {
     e.preventDefault();
     setError('');
     setLoading(true);
-
     try {
       const response = await authAPI.login(formData);
-
       dispatch(loginSuccess({
         user: response.data.user,
         token: response.data.token
       }));
-      
       navigate('/dashboard');
     } catch (err) {
-      console.error(err);
       setError(err.response?.data?.message || 'Invalid email or password');
     } finally {
       setLoading(false);
@@ -75,7 +82,7 @@ const Login = () => {
               </div>
             </div>
 
-            <div>
+            <div className="mb-6">
               <label className="block text-sm font-medium text-gray-700 mb-2">Password</label>
               <div className="relative">
                 <Lock className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400 w-5 h-5" />
@@ -105,10 +112,21 @@ const Login = () => {
               {loading ? 'Signing in...' : 'Sign In'}
             </button>
           </form>
+
+          {/* Conditional Registration Link */}
+          {!adminExists && (
+            <div className="mt-6 pt-6 border-t border-gray-100 text-center">
+              <p className="text-gray-500 text-sm mb-4">No admin account found in the system.</p>
+              <Link 
+                to="/register" 
+                className="inline-flex items-center text-indigo-600 font-bold hover:text-indigo-500 transition-colors"
+              >
+                <UserPlus className="w-4 h-4 mr-2" />
+                Register Initial Admin
+              </Link>
+            </div>
+          )}
         </div>
-        
-        {/* REMOVED THE REGISTER LINK HERE */}
-        
       </div>
     </div>
   );

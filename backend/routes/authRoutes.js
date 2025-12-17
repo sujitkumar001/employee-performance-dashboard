@@ -5,18 +5,16 @@ const {
   getMe,
   updateDetails,
   updatePassword,
-  register
+  register,
+  checkAdminStatus
 } = require('../controllers/authController');
 
-// ✅ FIXED: Changed '../middleware/authMiddleware' to '../middleware/auth'
 const { protect } = require('../middleware/auth');
 
 // Public Routes
-router.post('/register', register); // Note: Register route is protected
+router.get('/check-admin', checkAdminStatus); // Used by login page to show/hide register button
+router.post('/register', register); 
 router.post('/login', login);
-
-// Note: Register route is removed for security.
-// Only Admins can add users via the 'Employee' tab.
 
 // Protected Routes
 router.get('/me', protect, getMe);

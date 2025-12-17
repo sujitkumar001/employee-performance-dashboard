@@ -1,4 +1,3 @@
-
 import axios from 'axios';
 
 const API_URL = "https://employee-performance-dashboard-gocr.onrender.com/api";
@@ -48,6 +47,8 @@ export const authAPI = {
   getMe: () => api.get('/auth/me'),
   updateProfile: (data) => api.put('/auth/updatedetails', data),
   updatePassword: (data) => api.put('/auth/updatepassword', data),
+  // New method to check if an admin already exists in the database
+  checkAdmin: () => api.get('/auth/check-admin'), 
 };
 
 // ============================================
@@ -56,7 +57,7 @@ export const authAPI = {
 export const employeeAPI = {
   getAll: (params) => api.get('/employees', { params }),
   getOne: (id) => api.get(`/employees/${id}`),
-  create: (data) => api.post('/employees', data), // Used by Add Employee Modal
+  create: (data) => api.post('/employees', data), 
   update: (id, data) => api.put(`/employees/${id}`, data),
   delete: (id) => api.delete(`/employees/${id}`),
   getByDepartment: (department) => api.get(`/employees/department/${department}`),
@@ -70,7 +71,7 @@ export const projectAPI = {
   getAll: (params) => api.get('/projects', { params }),
   getOne: (id) => api.get(`/projects/${id}`),
   create: (data) => api.post('/projects', data),
-  update: (id, data) => api.put(`/projects/${id}`, data), // Used for Status Updates
+  update: (id, data) => api.put(`/projects/${id}`, data), 
   delete: (id) => api.delete(`/projects/${id}`),
   addTeamMember: (id, data) => api.post(`/projects/${id}/team`, data),
   removeTeamMember: (id, userId) => api.delete(`/projects/${id}/team/${userId}`),
@@ -84,7 +85,7 @@ export const taskAPI = {
   getAll: (params) => api.get('/tasks', { params }),
   getOne: (id) => api.get(`/tasks/${id}`),
   create: (data) => api.post('/tasks', data),
-  update: (id, data) => api.put(`/tasks/${id}`, data), // Used for Kanban Status Updates
+  update: (id, data) => api.put(`/tasks/${id}`, data), 
   delete: (id) => api.delete(`/tasks/${id}`),
   addComment: (id, data) => api.post(`/tasks/${id}/comments`, data),
   getByProject: (projectId) => api.get(`/tasks/project/${projectId}`),
